@@ -57,7 +57,7 @@ export function useDetails(config?: UseDetailsConfig) {
     editor
       ?.chain()
       .focus()
-      .setDetailsNode({ title: "Details", open: false })
+      .setDetailsNode({ title: "Details" })
       .run()
 
     onToggled?.(isActive)
