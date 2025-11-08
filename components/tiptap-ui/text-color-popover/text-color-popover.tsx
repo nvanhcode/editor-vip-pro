@@ -104,9 +104,9 @@ export function TextColorPopoverContent({
   const { handleRemoveTextColor } = useTextColor({ editor })
   const { handleCustomColorChange, canSetCustomColor } = useCustomTextColor({ 
     editor,
-    onApplied: (color) => {
-      console.log("Applied custom color:", color)
-    }
+    // onApplied: (color) => {
+    //   console.log("Applied custom color:", color)
+    // }
   })
   const isMobile = useIsMobile()
   const containerRef = useRef<HTMLDivElement>(null)

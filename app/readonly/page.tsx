@@ -33,7 +33,7 @@ export default function Page() {
       const findProseMirror = () => {
         const proseMirrorEl = containerRef.current?.querySelector('.ProseMirror')
         if (proseMirrorEl && proseMirrorEl !== proseMirrorElement) {
-          console.log('Found ProseMirror element:', proseMirrorEl)
+          // console.log('Found ProseMirror element:', proseMirrorEl)
           setProseMirrorElement(proseMirrorEl)
         }
       }
@@ -64,7 +64,7 @@ export default function Page() {
     if (proseMirrorEl) {
       // Lấy chiều cao thực của nội dung ProseMirror
       contentHeight = proseMirrorEl.scrollHeight
-      console.log('ProseMirror content height:', contentHeight)
+      // console.log('ProseMirror content height:', contentHeight)
     }
 
     if (editorContentEl) {
@@ -73,7 +73,7 @@ export default function Page() {
       const paddingTop = parseInt(styles.paddingTop) || 0
       const paddingBottom = parseInt(styles.paddingBottom) || 0
       padding += paddingTop + paddingBottom
-      console.log('Editor content padding:', { paddingTop, paddingBottom })
+      // console.log('Editor content padding:', { paddingTop, paddingBottom })
     }
 
     if (editorWrapperEl) {
@@ -82,22 +82,22 @@ export default function Page() {
       const paddingTop = parseInt(styles.paddingTop) || 0
       const paddingBottom = parseInt(styles.paddingBottom) || 0
       padding += paddingTop + paddingBottom
-      console.log('Editor wrapper padding:', { paddingTop, paddingBottom })
+      // console.log('Editor wrapper padding:', { paddingTop, paddingBottom })
     }
 
     // Chiều cao tổng = chiều cao content + padding
     const totalHeight = contentHeight + padding
     
-    console.log('Height calculation:', {
-      contentHeight,
-      padding,
-      totalHeight,
-      proseMirrorFound: !!proseMirrorEl,
-      proseMirrorScrollHeight: proseMirrorEl?.scrollHeight,
-      editorContentPadding: editorContentEl ? 'found' : 'not found',
-      editorWrapperPadding: editorWrapperEl ? 'found' : 'not found',
-      fallbackHeight: Math.max(containerEl.scrollHeight, rect.height)
-    })
+    // console.log('Height calculation:', {
+    //   contentHeight,
+    //   padding,
+    //   totalHeight,
+    //   proseMirrorFound: !!proseMirrorEl,
+    //   proseMirrorScrollHeight: proseMirrorEl?.scrollHeight,
+    //   editorContentPadding: editorContentEl ? 'found' : 'not found',
+    //   editorWrapperPadding: editorWrapperEl ? 'found' : 'not found',
+    //   fallbackHeight: Math.max(containerEl.scrollHeight, rect.height)
+    // })
 
     // Fallback nếu không tìm thấy ProseMirror element
     return totalHeight > 0 ? totalHeight : Math.max(containerEl.scrollHeight, rect.height)
@@ -129,7 +129,7 @@ export default function Page() {
         ...additionalData
       } as IframeMessage
 
-      console.log(`Sending ${type}:`, messageData)
+      // console.log(`Sending ${type}:`, messageData)
       window.parent.postMessage(messageData, '*')
     }
   }, [calculateTotalHeight, rect.height])
@@ -144,7 +144,7 @@ export default function Page() {
   }, [rect.height, rect.width, isContentLoaded, sendHeightMessage])
 
   useEffect(() => {
-    console.log('Readonly iframe component mounted, sending ready signal...')
+    // console.log('Readonly iframe component mounted, sending ready signal...')
     
     // Gửi signal báo iframe đã sẵn sàng
     if (window.parent && window.parent !== window) {
@@ -156,7 +156,7 @@ export default function Page() {
     // Lắng nghe message từ iframe cha để nhận content
     const handleMessage = (event: MessageEvent) => {
       if (event.data.type === 'SET_INITIAL_CONTENT') {
-        console.log('Setting readonly content:', event.data.content)
+        // console.log('Setting readonly content:', event.data.content)
         setContent(event.data.content)
         
         // Delay để đảm bảo content đã render xong
@@ -165,7 +165,7 @@ export default function Page() {
         }, 100)
       } else if (event.data.type === 'REQUEST_HEIGHT') {
         // Parent yêu cầu gửi lại height hiện tại
-        console.log('Parent requested current height')
+        // console.log('Parent requested current height')
         setTimeout(() => {
           sendHeightMessage('HEIGHT_RESPONSE')
         }, 50)
@@ -220,10 +220,10 @@ export default function Page() {
   useEffect(() => {
     if (!proseMirrorElement) return
 
-    console.log('Setting up ProseMirror content observer...')
+    // console.log('Setting up ProseMirror content observer...')
     
     const observer = new MutationObserver(() => {
-      console.log('ProseMirror content changed')
+      // console.log('ProseMirror content changed')
       const timer = setTimeout(() => {
         sendHeightMessage('CONTENT_HEIGHT_UPDATE')
       }, 50)
@@ -245,7 +245,7 @@ export default function Page() {
 
   // Callback khi content đã được render
   const handleContentRendered = useCallback(() => {
-    console.log('Content rendered, finding ProseMirror element and calculating height...')
+    // console.log('Content rendered, finding ProseMirror element and calculating height...')
     
     // Đảm bảo ProseMirror element được tìm thấy
     const proseMirrorEl = containerRef.current?.querySelector('.ProseMirror')

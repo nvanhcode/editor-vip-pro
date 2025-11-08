@@ -7,7 +7,7 @@ export default function Page() {
   const [initialContent, setInitialContent] = useState<string>('')
 
   useEffect(() => {
-    console.log('Iframe component mounted, sending ready signal...')
+    // console.log('Iframe component mounted, sending ready signal...')
     
     // Gửi signal báo iframe đã sẵn sàng
     if (window.parent && window.parent !== window) {
@@ -19,7 +19,7 @@ export default function Page() {
     // Lắng nghe message từ iframe cha
     const handleMessage = (event: MessageEvent) => {
       if (event.data.type === 'SET_INITIAL_CONTENT') {
-        console.log('Setting initial content:', event.data.content)
+        // console.log('Setting initial content:', event.data.content)
         setInitialContent(event.data.content)
       }
     }

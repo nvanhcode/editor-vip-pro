@@ -9,7 +9,7 @@ import { ChevronDownIcon } from "@/components/tiptap-icons/chevron-down-icon"
 
 interface DetailsNodeAttrs {
   title: string
-  open: boolean
+  // open removed - managed via DOM only
 }
 
 export function DetailsNodeComponent({ 
@@ -20,42 +20,64 @@ export function DetailsNodeComponent({
 }: NodeViewProps) {
   const [isEditing, setIsEditing] = useState(false)
   const inputRef = useRef<HTMLInputElement>(null)
+  const containerRef = useRef<HTMLDivElement>(null)
 
   const attrs = node.attrs as DetailsNodeAttrs
   
-  // Use the actual title from attrs, unless we're editing
-  const [tempTitle, setTempTitle] = useState(attrs.title)
+  // Read open state directly from DOM element
+  const [isOpen, setIsOpen] = useState(false)
+  const [tempTitle, setTempTitle] = useState(attrs.title || "Details")
   
   // Check if editor is in readonly mode
   const isReadonly = !editor?.isEditable
 
-  const handleToggle = useCallback(() => {
-    // Only toggle if we're not editing
-    if (!isEditing) {
-      updateAttributes({ open: !attrs.open })
+  // Helper to read current state from DOM
+  const readOpenStateFromDOM = useCallback(() => {
+    if (containerRef.current) {
+      const dataOpen = containerRef.current.getAttribute('data-open')
+      return dataOpen === 'true'
     }
-  }, [attrs.open, updateAttributes, isEditing])
+    return false
+  }, [])
+
+  // Helper to update DOM directly
+  const updateDOMState = useCallback((open: boolean) => {
+    if (containerRef.current) {
+      containerRef.current.setAttribute('data-open', open ? 'true' : 'false')
+      setIsOpen(open)
+    }
+  }, [])
+
+  const handleToggle = useCallback(() => {
+    if (!isEditing) {
+      const currentState = readOpenStateFromDOM()
+      const newState = !currentState
+      updateDOMState(newState)
+      
+      // Optional: still update title attribute for persistence
+      updateAttributes({ title: attrs.title })
+    }
+  }, [isEditing, readOpenStateFromDOM, updateDOMState, updateAttributes, attrs.title])
 
   const handleSummaryClick = useCallback((e: React.MouseEvent) => {
+    e.preventDefault()
+    e.stopPropagation()
+    
     const target = e.target as HTMLElement
     
-    // In readonly mode, allow clicking anywhere in summary to toggle
     if (isReadonly) {
-      e.preventDefault()
-      e.stopPropagation()
       handleToggle()
       return
     }
     
-    // In editable mode, don't toggle if clicking on title area or if editing
     if (isEditing || 
         target.classList.contains('details-title') || 
-        target.closest('.details-title')) {
+        target.closest('.details-title') ||
+        target.classList.contains('details-title-input') ||
+        target.closest('.details-title-input')) {
       return
     }
     
-    e.preventDefault()
-    e.stopPropagation()
     handleToggle()
   }, [handleToggle, isEditing, isReadonly])
 
@@ -64,12 +86,13 @@ export function DetailsNodeComponent({
     e.stopPropagation()
     
     if (isReadonly) {
-      // In readonly mode, clicking title should toggle the details
       handleToggle()
-    } else if (!isEditing) {
-      // In editable mode, double-click should start editing
+      return
+    }
+    
+    if (!isEditing) {
       setIsEditing(true)
-      setTempTitle(attrs.title) // Always sync with current attrs
+      setTempTitle(attrs.title || "Details")
       setTimeout(() => {
         inputRef.current?.focus()
         inputRef.current?.select()
@@ -78,17 +101,19 @@ export function DetailsNodeComponent({
   }, [attrs.title, isEditing, isReadonly, handleToggle])
 
   const handleTitleSave = useCallback(() => {
-    updateAttributes({ title: tempTitle })
+    const newTitle = tempTitle.trim() || "Details"
+    updateAttributes({ title: newTitle })
+    setTempTitle(newTitle)
     setIsEditing(false)
   }, [tempTitle, updateAttributes])
 
   const handleTitleCancel = useCallback(() => {
-    setTempTitle(attrs.title)
+    setTempTitle(attrs.title || "Details")
     setIsEditing(false)
   }, [attrs.title])
 
   const handleKeyDown = useCallback((e: React.KeyboardEvent) => {
-    e.stopPropagation() // Prevent editor shortcuts when editing title
+    e.stopPropagation()
     if (e.key === 'Enter') {
       e.preventDefault()
       handleTitleSave()
@@ -110,13 +135,15 @@ export function DetailsNodeComponent({
 
   return (
     <NodeViewWrapper 
+      ref={containerRef}
       className={`details-node ${selected ? 'selected' : ''}`}
-      data-open={attrs.open}
+      data-open="false" // Always start closed
+      data-title={attrs.title || "Details"}
     >
       <div className="details-summary" onClick={handleSummaryClick}>
         <div className="details-icon">
           <ChevronDownIcon 
-            className={`details-chevron ${attrs.open ? 'open' : ''}`}
+            className={`details-chevron ${isOpen ? 'open' : ''}`}
           />
         </div>
         
@@ -135,15 +162,14 @@ export function DetailsNodeComponent({
         ) : (
           <div 
             className="details-title"
-            onClick={isReadonly ? handleTitleClick : undefined}
-            onDoubleClick={isReadonly ? undefined : handleTitleClick}
+            onClick={handleTitleClick}
           >
-            {attrs.title}
+            {attrs.title || "Details"}
           </div>
         )}
       </div>
       
-      <div className={`details-content ${attrs.open ? 'open' : 'closed'}`}>
+      <div className={`details-content ${isOpen ? 'open' : 'closed'}`}>
         <div className="details-content-inner">
           <NodeViewContent />
         </div>

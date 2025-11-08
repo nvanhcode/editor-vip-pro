@@ -15,14 +15,14 @@ export interface DetailsNodeOptions {
 declare module "@tiptap/react" {
   interface Commands<ReturnType> {
     details: {
-      setDetailsNode: (options?: { title?: string; open?: boolean }) => ReturnType
+      setDetailsNode: (options?: { title?: string }) => ReturnType
     }
   }
 }
 
 /**
- * A Tiptap node extension that creates a collapsible details/summary element.
- * Similar to HTML <details> tag with <summary> for title and content that can be toggled.
+ * Details node that ALWAYS starts closed.
+ * Simple approach: override getInitialAttributes to force closed state.
  */
 export const DetailsNode = Node.create<DetailsNodeOptions>({
   name: "details",
@@ -43,31 +43,12 @@ export const DetailsNode = Node.create<DetailsNodeOptions>({
     return {
       title: {
         default: "Details",
-        parseHTML: element => element.getAttribute('data-title'),
-        renderHTML: attributes => {
-          if (!attributes.title) {
-            return {}
-          }
-          return {
-            'data-title': attributes.title,
-          }
-        },
+        parseHTML: element => element.getAttribute('data-title') || "Details",
+        renderHTML: attributes => ({
+          'data-title': attributes.title || "Details",
+        }),
       },
-      open: {
-        default: false,
-        parseHTML: () => {
-          // Always start closed regardless of saved state
-          return false
-        },
-        renderHTML: attributes => {
-          if (!attributes.open) {
-            return {}
-          }
-          return {
-            'data-open': attributes.open,
-          }
-        },
-      },
+      // Remove open attribute completely - manage via DOM only
     }
   },
 
@@ -75,6 +56,13 @@ export const DetailsNode = Node.create<DetailsNodeOptions>({
     return [
       { 
         tag: 'div[data-type="details"]',
+        getAttrs: (element) => {
+          const el = element as HTMLElement
+          return {
+            title: el.getAttribute('data-title') || "Details"
+            // No open attribute - pure DOM management
+          }
+        }
       }
     ]
   },
@@ -85,8 +73,8 @@ export const DetailsNode = Node.create<DetailsNodeOptions>({
       mergeAttributes(
         { 
           "data-type": "details",
-          "data-title": node.attrs.title,
-          "data-open": node.attrs.open
+          "data-title": node.attrs.title || "Details",
+          "data-open": "false" // Always render closed, let component manage DOM
         }, 
         this.options.HTMLAttributes, 
         HTMLAttributes
@@ -107,8 +95,8 @@ export const DetailsNode = Node.create<DetailsNodeOptions>({
           return commands.insertContent({
             type: this.name,
             attrs: {
-              title: options.title || "Details",
-              open: options.open || false
+              title: options.title || "Details"
+              // No open attribute - DOM manages state
             },
             content: [
               {
