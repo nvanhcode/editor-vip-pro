@@ -12,7 +12,6 @@ import { useIsMobile } from "@/hooks/use-mobile"
 import {
   isMarkInSchema,
   isNodeTypeSelected,
-  isExtensionAvailable,
 } from "@/lib/tiptap-utils"
 
 // --- Icons ---
@@ -144,13 +143,8 @@ export function canColorHighlight(
 
     return editor.can().setMark("highlight")
   } else {
-    if (!isExtensionAvailable(editor, ["nodeBackground"])) return false
-
-    try {
-      return editor.can().toggleNodeBackgroundColor("test")
-    } catch {
-      return false
-    }
+    // Node background mode is not supported without nodeBackground extension
+    return false
   }
 }
 
@@ -202,7 +196,8 @@ export function removeHighlight(
   if (mode === "mark") {
     return editor.chain().focus().unsetMark("highlight").run()
   } else {
-    return editor.chain().focus().unsetNodeBackgroundColor().run()
+    // Node background mode is not supported without nodeBackground extension
+    return false
   }
 }
 
@@ -221,7 +216,8 @@ export function shouldShowButton(props: {
   if (mode === "mark") {
     if (!isMarkInSchema("highlight", editor)) return false
   } else {
-    if (!isExtensionAvailable(editor, ["nodeBackground"])) return false
+    // Node background mode is not supported without nodeBackground extension
+    return false
   }
 
   if (hideWhenUnavailable && !editor.isActive("code")) {
@@ -291,16 +287,8 @@ export function useColorHighlight(config: UseColorHighlightConfig) {
 
       return true
     } else {
-      const success = editor
-        .chain()
-        .focus()
-        .toggleNodeBackgroundColor(highlightColor)
-        .run()
-
-      if (success) {
-        onApplied?.({ color: highlightColor, label, mode })
-      }
-      return success
+      // Node background mode is not supported without nodeBackground extension
+      return false
     }
   }, [canColorHighlightState, highlightColor, editor, label, onApplied, mode])
 
