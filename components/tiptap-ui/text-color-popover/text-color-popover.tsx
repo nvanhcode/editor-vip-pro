@@ -26,6 +26,7 @@ import {
   CardBody,
   CardItemGroup,
 } from "@/components/tiptap-ui-primitive/card"
+import { ColorPicker } from "@/components/tiptap-ui-primitive/color-picker"
 
 // --- Tiptap UI ---
 import type {
@@ -36,6 +37,7 @@ import {
   TextColorButton,
   pickTextColorsByValue,
   useTextColor,
+  useCustomTextColor,
 } from "@/components/tiptap-ui/text-color-button"
 
 export interface TextColorPopoverContentProps {
@@ -100,11 +102,18 @@ export function TextColorPopoverContent({
   ]),
 }: TextColorPopoverContentProps) {
   const { handleRemoveTextColor } = useTextColor({ editor })
+  const { handleCustomColorChange, canSetCustomColor } = useCustomTextColor({ 
+    editor,
+    onApplied: (color) => {
+      console.log("Applied custom color:", color)
+    }
+  })
   const isMobile = useIsMobile()
   const containerRef = useRef<HTMLDivElement>(null)
+  const [customColor, setCustomColor] = useState("#000000")
 
   const menuItems = useMemo(
-    () => [...colors, { label: "Remove text color", value: "none" }],
+    () => [...colors, { label: "Custom color", value: "custom" }, { label: "Remove text color", value: "none" }],
     [colors]
   )
 
@@ -119,10 +128,19 @@ export function TextColorPopoverContent({
       ) as HTMLElement
       if (highlightedElement) highlightedElement.click()
       if (item.value === "none") handleRemoveTextColor()
+      else if (item.value === "custom") {
+        // Custom color picker will handle this
+        return true
+      }
       return true
     },
     autoSelectFirstItem: false,
   })
+
+  const handleCustomColorChangeInternal = (color: string) => {
+    setCustomColor(color)
+    handleCustomColorChange(color)
+  }
 
   return (
     <Card
@@ -147,15 +165,24 @@ export function TextColorPopoverContent({
           </ButtonGroup>
           <Separator />
           <ButtonGroup orientation="horizontal">
+            <ColorPicker
+              value={customColor}
+              onChange={handleCustomColorChangeInternal}
+              disabled={!canSetCustomColor}
+              aria-label="Choose custom color"
+              tooltip="Custom Color"
+              tabIndex={selectedIndex === colors.length ? 0 : -1}
+              data-highlighted={selectedIndex === colors.length}
+            />
             <Button
               onClick={handleRemoveTextColor}
               aria-label="Remove text color"
               tooltip="Remove text color"
-              tabIndex={selectedIndex === colors.length ? 0 : -1}
+              tabIndex={selectedIndex === colors.length + 1 ? 0 : -1}
               type="button"
               role="menuitem"
               data-style="ghost"
-              data-highlighted={selectedIndex === colors.length}
+              data-highlighted={selectedIndex === colors.length + 1}
             >
               <BanIcon className="tiptap-button-icon" />
             </Button>

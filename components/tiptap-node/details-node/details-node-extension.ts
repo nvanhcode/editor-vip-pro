@@ -55,7 +55,10 @@ export const DetailsNode = Node.create<DetailsNodeOptions>({
       },
       open: {
         default: false,
-        parseHTML: element => element.hasAttribute('data-open') && element.getAttribute('data-open') !== 'false',
+        parseHTML: () => {
+          // Always start closed regardless of saved state
+          return false
+        },
         renderHTML: attributes => {
           if (!attributes.open) {
             return {}

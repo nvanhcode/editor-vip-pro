@@ -15,15 +15,4 @@
     font-weight: bold;
     color: var(--text-color);
   }
-  
-  &::after {
-    content: "";
-    position: absolute;
-    bottom: -2px;
-    left: 0;
-    right: 0;
-    height: 2px;
-    background: var(--text-color);
-    border-radius: 1px;
-  }
 }

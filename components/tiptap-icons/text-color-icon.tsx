@@ -1,38 +1,28 @@
-import { memo } from "react"
+import { memo } from "react";
 
-type SvgProps = React.ComponentPropsWithoutRef<"svg">
+type SvgProps = React.ComponentPropsWithoutRef<"svg">;
 
 export const TextColorIcon = memo(({ className, ...props }: SvgProps) => {
   return (
     <svg
+      xmlns="http://www.w3.org/2000/svg"
+      className={className}
+      {...props}
       width="24"
       height="24"
-      className={className}
       viewBox="0 0 24 24"
-      fill="currentColor"
-      xmlns="http://www.w3.org/2000/svg"
-      {...props}
     >
+      <rect width="24" height="24" fill="none" />
       <path
-        fillRule="evenodd"
-        clipRule="evenodd"
-        d="M7 3C6.44772 3 6 3.44772 6 4V5H5C4.44772 5 4 5.44772 4 6C4 6.55228 4.44772 7 5 7H6V18C6 18.5523 6.44772 19 7 19H8V20C8 20.5523 8.44772 21 9 21H15C15.5523 21 16 20.5523 16 20C16 19.4477 15.5523 19 15 19H10V18H17C17.5523 18 18 17.5523 18 17V6C18 5.44772 17.5523 5 17 5H16V4C16 3.44772 15.5523 3 15 3H7ZM8 5V16H16V7H8V5Z"
         fill="currentColor"
+        d="M12 22C6.49 22 2 17.51 2 12S6.49 2 12 2s10 4.04 10 9c0 3.31-2.69 6-6 6h-1.77c-.28 0-.5.22-.5.5c0 .12.05.23.13.33c.41.47.64 1.06.64 1.67A2.5 2.5 0 0 1 12 22m0-18c-4.41 0-8 3.59-8 8s3.59 8 8 8c.28 0 .5-.22.5-.5a.54.54 0 0 0-.14-.35c-.41-.46-.63-1.05-.63-1.65a2.5 2.5 0 0 1 2.5-2.5H16c2.21 0 4-1.79 4-4c0-3.86-3.59-7-8-7"
       />
-      <path
-        d="M10 9H14L13 12H11L10 9Z"
-        fill="currentColor"
-      />
-      <rect
-        x="2"
-        y="19"
-        width="20"
-        height="2"
-        rx="1"
-        fill="currentColor"
-      />
+      <circle cx="6.5" cy="11.5" r="1.5" fill="currentColor" />
+      <circle cx="9.5" cy="7.5" r="1.5" fill="currentColor" />
+      <circle cx="14.5" cy="7.5" r="1.5" fill="currentColor" />
+      <circle cx="17.5" cy="11.5" r="1.5" fill="currentColor" />
     </svg>
-  )
-})
+  );
+});
 
-TextColorIcon.displayName = "TextColorIcon"
+TextColorIcon.displayName = "TextColorIcon";
