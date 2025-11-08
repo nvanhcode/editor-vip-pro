@@ -1,0 +1,29 @@
+.tiptap-button-text-color {
+  position: relative;
+  width: 1em;
+  height: 1em;
+  border-radius: 2px;
+  background: var(--text-color);
+  
+  &::before {
+    content: "A";
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 0.75em;
+    font-weight: bold;
+    color: var(--text-color);
+  }
+  
+  &::after {
+    content: "";
+    position: absolute;
+    bottom: -2px;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background: var(--text-color);
+    border-radius: 1px;
+  }
+}

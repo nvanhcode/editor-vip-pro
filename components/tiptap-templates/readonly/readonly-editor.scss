@@ -1,0 +1,60 @@
+/* Readonly Editor Styles */
+
+/* Override body styling for readonly mode */
+body {
+  background: transparent !important;
+  padding: 0 !important;
+}
+
+html {
+  background: transparent !important;
+}
+
+.readonly-wrapper {
+  /* Loại bỏ padding cho toolbar vì không có toolbar */
+  padding-top: 0 !important;
+  /* Bỏ nền màu trắng */
+  background: transparent !important;
+}
+
+.readonly-content {
+  /* Bỏ padding và tùy chỉnh styling cho readonly content */
+  padding: 0 !important;
+  max-width: 100%;
+  /* Bỏ nền màu trắng */
+  background: transparent !important;
+}
+
+.readonly-editor {
+  /* Loại bỏ cursor và các hiệu ứng hover */
+  cursor: default !important;
+  padding: 0 !important;
+}
+
+.readonly-editor .ProseMirror {
+  /* Loại bỏ focus outline */
+  outline: none !important;
+  border: none !important;
+  
+  /* Loại bỏ cursor */
+  caret-color: transparent !important;
+  
+  /* Bỏ nền màu trắng và padding */
+  background: transparent !important;
+  padding: 0 !important;
+}
+
+.readonly-editor .ProseMirror:focus {
+  /* Loại bỏ focus styling */
+  outline: none !important;
+  box-shadow: none !important;
+}
+
+/* Disable selection styling for a cleaner look (optional) */
+.readonly-editor .ProseMirror::selection {
+  background: rgba(0, 0, 0, 0.1);
+}
+
+.readonly-editor .ProseMirror::-moz-selection {
+  background: rgba(0, 0, 0, 0.1);
+}
