@@ -14,6 +14,7 @@ import { Subscript } from "@tiptap/extension-subscript"
 import { Superscript } from "@tiptap/extension-superscript"
 import { TextStyle } from "@tiptap/extension-text-style"
 import { Color } from "@tiptap/extension-color"
+import Youtube from "@tiptap/extension-youtube"
 
 // --- Tiptap Node ---
 import { HorizontalRule } from "@/components/tiptap-node/horizontal-rule-node/horizontal-rule-node-extension"
@@ -30,6 +31,7 @@ import "@/components/tiptap-node/details-node/details-node.scss"
 // --- Styles ---
 import "@/components/tiptap-templates/simple/simple-editor.scss"
 import "@/components/tiptap-templates/readonly/readonly-editor.scss"
+import "@/components/tiptap-ui/youtube-button/youtube-button.scss"
 
 interface ReadonlyEditorProps {
   content?: string
@@ -66,6 +68,10 @@ export function ReadonlyEditor({ content, onContentRendered }: ReadonlyEditorPro
       Superscript,
       Subscript,
       DetailsNode,
+      Youtube.configure({
+        controls: false,
+        nocookie: true,
+      }),
       // Loại bỏ ImageUploadNode vì không cần upload trong readonly
     ],
     content: content || '',

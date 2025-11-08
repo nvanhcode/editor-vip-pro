@@ -16,6 +16,7 @@ import { Superscript } from "@tiptap/extension-superscript"
 import { TextStyle } from "@tiptap/extension-text-style"
 import { Color } from "@tiptap/extension-color"
 import { Selection } from "@tiptap/extensions"
+import Youtube from "@tiptap/extension-youtube"
 
 // --- UI Primitives ---
 import { Button } from "@/components/tiptap-ui-primitive/button"
@@ -64,12 +65,14 @@ import {
 import { MarkButton } from "@/components/tiptap-ui/mark-button"
 import { TextAlignButton } from "@/components/tiptap-ui/text-align-button"
 import { UndoRedoButton } from "@/components/tiptap-ui/undo-redo-button"
+import { YoutubeButton, YoutubePopoverButton, YoutubePopoverContent } from "@/components/tiptap-ui/youtube-button"
 
 // --- Icons ---
 import { ArrowLeftIcon } from "@/components/tiptap-icons/arrow-left-icon"
 import { HighlighterIcon } from "@/components/tiptap-icons/highlighter-icon"
 import { TextColorIcon } from "@/components/tiptap-icons/text-color-icon"
 import { LinkIcon } from "@/components/tiptap-icons/link-icon"
+import { YoutubeIcon } from "@/components/tiptap-icons/youtube-icon"
 
 // --- Hooks ---
 import { useIsMobile } from "@/hooks/use-mobile"
@@ -84,16 +87,19 @@ import { handleImageUpload, MAX_FILE_SIZE } from "@/lib/tiptap-utils"
 
 // --- Styles ---
 import "@/components/tiptap-templates/simple/simple-editor.scss"
+import "@/components/tiptap-ui/youtube-button/youtube-button.scss"
 
 const MainToolbarContent = ({
   onHighlighterClick,
   onTextColorClick,
   onLinkClick,
+  onYoutubeClick,
   isMobile,
 }: {
   onHighlighterClick: () => void
   onTextColorClick: () => void
   onLinkClick: () => void
+  onYoutubeClick: () => void
   isMobile: boolean
 }) => {
   return (
@@ -159,6 +165,11 @@ const MainToolbarContent = ({
 
       <ToolbarGroup>
         <ImageUploadButton text="Add" />
+        {!isMobile ? (
+          <YoutubeButton />
+        ) : (
+          <YoutubePopoverButton onClick={onYoutubeClick} />
+        )}
       </ToolbarGroup>
 
       <Spacer />
@@ -176,7 +187,7 @@ const MobileToolbarContent = ({
   type,
   onBack,
 }: {
-  type: "highlighter" | "textColor" | "link"
+  type: "highlighter" | "textColor" | "link" | "youtube"
   onBack: () => void
 }) => (
   <>
@@ -187,8 +198,10 @@ const MobileToolbarContent = ({
           <HighlighterIcon className="tiptap-button-icon" />
         ) : type === "textColor" ? (
           <TextColorIcon className="tiptap-button-icon" />
-        ) : (
+        ) : type === "link" ? (
           <LinkIcon className="tiptap-button-icon" />
+        ) : (
+          <YoutubeIcon className="tiptap-button-icon" />
         )}
       </Button>
     </ToolbarGroup>
@@ -199,8 +212,10 @@ const MobileToolbarContent = ({
       <ColorHighlightPopoverContent />
     ) : type === "textColor" ? (
       <TextColorPopoverContent />
-    ) : (
+    ) : type === "link" ? (
       <LinkContent />
+    ) : (
+      <YoutubePopoverContent />
     )}
   </>
 )
@@ -214,7 +229,7 @@ export function SimpleEditor({ onChange, initialContent }: SimpleEditorProps = {
   const isMobile = useIsMobile()
   const { height } = useWindowSize()
   const [mobileView, setMobileView] = useState<
-    "main" | "highlighter" | "textColor" | "link"
+    "main" | "highlighter" | "textColor" | "link" | "youtube"
   >("main")
   const toolbarRef = useRef<HTMLDivElement>(null)
 
@@ -256,6 +271,10 @@ export function SimpleEditor({ onChange, initialContent }: SimpleEditorProps = {
       Subscript,
       Selection,
       DetailsNode,
+      Youtube.configure({
+        controls: false,
+        nocookie: true,
+      }),
       ImageUploadNode.configure({
         accept: "image/*",
         maxSize: MAX_FILE_SIZE,
@@ -306,6 +325,7 @@ export function SimpleEditor({ onChange, initialContent }: SimpleEditorProps = {
               onHighlighterClick={() => setMobileView("highlighter")}
               onTextColorClick={() => setMobileView("textColor")}
               onLinkClick={() => setMobileView("link")}
+              onYoutubeClick={() => setMobileView("youtube")}
               isMobile={isMobile}
             />
           ) : (
@@ -315,7 +335,9 @@ export function SimpleEditor({ onChange, initialContent }: SimpleEditorProps = {
                   ? "highlighter"
                   : mobileView === "textColor"
                   ? "textColor"
-                  : "link"
+                  : mobileView === "link"
+                  ? "link"
+                  : "youtube"
               }
               onBack={() => setMobileView("main")}
             />
