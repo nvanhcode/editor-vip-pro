@@ -1,13 +1,13 @@
 "use client"
 
 import { UnifiedEditor } from "@/components/tiptap-templates/unified/unified-editor"
-import { useEffect, useState, useRef, useCallback } from "react"
+import { useEffect, useState, useRef, useCallback, Suspense } from "react"
 import { useSearchParams } from "next/navigation"
 import { useElementRect } from "@/hooks/use-element-rect"
 import { useThrottledCallback } from "@/hooks/use-throttled-callback"
 import type { IframeMessage, HeightData } from "@/types/iframe-messages"
 
-export default function Page() {
+function ToolbarEditorContent() {
   const searchParams = useSearchParams()
   const placeholder = searchParams.get('placeholder') || ''
   const isReadonly = searchParams.get('isReadOnly') === '1'
@@ -320,5 +320,17 @@ export default function Page() {
       initialContent={initialContent} 
       placeholder={placeholder} 
     />
+  )
+}
+
+function LoadingFallback() {
+  return <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>Loading...</div>
+}
+
+export default function Page() {
+  return (
+    <Suspense fallback={<LoadingFallback />}>
+      <ToolbarEditorContent />
+    </Suspense>
   )
 }
