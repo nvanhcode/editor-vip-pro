@@ -351,7 +351,7 @@ export function selectionWithinConvertibleTypes(
  * @param file The file to upload
  * @param onProgress Optional callback for tracking upload progress
  * @param abortSignal Optional AbortSignal for cancelling the upload
- * @returns Promise resolving to the URL of the uploaded image
+ * @returns Promise resolving to the base64 data URL of the image
  */
 export const handleImageUpload = async (
   file: File,
@@ -369,17 +369,43 @@ export const handleImageUpload = async (
     )
   }
 
-  // For demo/testing: Simulate upload progress. In production, replace the following code
-  // with your own upload implementation.
-  for (let progress = 0; progress <= 100; progress += 10) {
-    if (abortSignal?.aborted) {
-      throw new Error("Upload cancelled")
-    }
-    await new Promise((resolve) => setTimeout(resolve, 500))
-    onProgress?.({ progress })
+  // Validate file type
+  if (!file.type.startsWith("image/")) {
+    throw new Error("File must be an image")
   }
 
-  return "/images/tiptap-ui-placeholder-image.jpg"
+  // Convert file to base64 with simulated progress
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader()
+
+    reader.onload = () => {
+      // Simulate progress for better UX
+      const simulateProgress = async () => {
+        for (let progress = 0; progress <= 100; progress += 20) {
+          if (abortSignal?.aborted) {
+            reject(new Error("Upload cancelled"))
+            return
+          }
+          await new Promise((resolve) => setTimeout(resolve, 100))
+          onProgress?.({ progress })
+        }
+        
+        if (reader.result && typeof reader.result === 'string') {
+          resolve(reader.result)
+        } else {
+          reject(new Error("Failed to convert image to base64"))
+        }
+      }
+      
+      simulateProgress()
+    }
+
+    reader.onerror = () => {
+      reject(new Error("Failed to read file"))
+    }
+
+    reader.readAsDataURL(file)
+  })
 }
 
 type ProtocolOptions = {

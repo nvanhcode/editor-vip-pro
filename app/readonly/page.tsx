@@ -1,6 +1,6 @@
 "use client"
 
-import { ReadonlyEditor } from "@/components/tiptap-templates/readonly/readonly-editor"
+import { UnifiedEditor } from "@/components/tiptap-templates/unified/unified-editor"
 import { useEffect, useState, useRef, useCallback } from "react"
 import { useElementRect } from "@/hooks/use-element-rect"
 import type { IframeMessage, HeightData } from "@/types/iframe-messages"
@@ -267,7 +267,8 @@ export default function Page() {
       padding: 0,
       margin: 0
     }}>
-      <ReadonlyEditor 
+      <UnifiedEditor 
+        mode="readonly"
         content={content} 
         onContentRendered={handleContentRendered}
       />

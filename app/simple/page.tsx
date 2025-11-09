@@ -1,9 +1,12 @@
 "use client"
 
-import { SimpleEditor } from "@/components/tiptap-templates/simple/simple-editor"
+import { UnifiedEditor } from "@/components/tiptap-templates/unified/unified-editor"
 import { useEffect, useState } from "react"
+import { useSearchParams } from "next/navigation"
 
 export default function Page() {
+  const searchParams = useSearchParams()
+  const placeholder = searchParams.get('placeholder') || ''
   const [initialContent, setInitialContent] = useState<string>('')
 
   useEffect(() => {
@@ -40,6 +43,6 @@ export default function Page() {
       }, '*')
     }
   }
-
-  return <SimpleEditor onChange={handleEditorChange} initialContent={initialContent} />
+  
+  return <UnifiedEditor mode="editable" onChange={handleEditorChange} initialContent={initialContent} placeholder={placeholder} />
 }

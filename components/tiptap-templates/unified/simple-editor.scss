@@ -60,6 +60,31 @@ body,
   overflow: auto;
 }
 
+/* Editable mode specific styles - ensuring white background */
+.simple-editor-wrapper.editable-wrapper {
+  background-color: #ffffff !important;
+}
+
+.simple-editor-wrapper.editable-wrapper .simple-editor-content {
+  background-color: #ffffff !important;
+}
+
+.simple-editor-wrapper.editable-wrapper .tiptap.ProseMirror.simple-editor {
+  background-color: #ffffff !important;
+}
+
+/* Override any inherited background colors in editable mode */
+html .simple-editor-wrapper.editable-wrapper,
+body .simple-editor-wrapper.editable-wrapper,
+.dark .simple-editor-wrapper.editable-wrapper {
+  background-color: #ffffff !important;
+}
+
+.dark .simple-editor-wrapper.editable-wrapper .simple-editor-content,
+.dark .simple-editor-wrapper.editable-wrapper .tiptap.ProseMirror.simple-editor {
+  background-color: #ffffff !important;
+}
+
 .simple-editor-content {
   max-width: 648px;
   width: 100%;

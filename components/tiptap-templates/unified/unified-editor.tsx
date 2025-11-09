@@ -16,6 +16,7 @@ import { Superscript } from "@tiptap/extension-superscript"
 import { TextStyle } from "@tiptap/extension-text-style"
 import { Color } from "@tiptap/extension-color"
 import { Selection } from "@tiptap/extensions"
+import { Placeholder } from "@tiptap/extension-placeholder"
 import Youtube from "@tiptap/extension-youtube"
 
 // --- UI Primitives ---
@@ -78,13 +79,12 @@ import { useIsMobile } from "@/hooks/use-mobile"
 import { useWindowSize } from "@/hooks/use-window-size"
 import { useCursorVisibility } from "@/hooks/use-cursor-visibility"
 
-// --- Components ---
-
 // --- Lib ---
 import { handleImageUpload, MAX_FILE_SIZE } from "@/lib/tiptap-utils"
 
 // --- Styles ---
-import "@/components/tiptap-templates/simple/simple-editor.scss"
+import "@/components/tiptap-templates/unified/simple-editor.scss"
+import "@/components/tiptap-templates/unified/readonly-editor.scss"
 import "@/components/tiptap-ui/youtube-button/youtube-button.scss"
 
 const MainToolbarContent = ({
@@ -207,12 +207,27 @@ const MobileToolbarContent = ({
   </>
 )
 
-interface SimpleEditorProps {
+export type EditorMode = "editable" | "readonly"
+
+interface UnifiedEditorProps {
+  mode: EditorMode
+  // Props for editable mode
   onChange?: (content: string) => void
   initialContent?: string
+  placeholder?: string
+  // Props for readonly mode
+  content?: string
+  onContentRendered?: () => void
 }
 
-export function SimpleEditor({ onChange, initialContent }: SimpleEditorProps = {}) {
+export function UnifiedEditor({ 
+  mode = "editable",
+  onChange, 
+  initialContent,
+  placeholder,
+  content,
+  onContentRendered 
+}: UnifiedEditorProps) {
   const isMobile = useIsMobile()
   const { height } = useWindowSize()
   const [mobileView, setMobileView] = useState<
@@ -220,20 +235,29 @@ export function SimpleEditor({ onChange, initialContent }: SimpleEditorProps = {
   >("main")
   const toolbarRef = useRef<HTMLDivElement>(null)
 
+  const isEditable = mode === "editable"
+  const isReadonly = mode === "readonly"
+
+  // Determine the content to use based on mode
+  const editorContent = isEditable ? initialContent : content
+
   const editor = useEditor({
     immediatelyRender: false,
     shouldRerenderOnTransaction: false,
+    editable: isEditable,
     editorProps: {
       attributes: {
-        autocomplete: "off",
-        autocorrect: "off",
-        autocapitalize: "off",
-        "aria-label": "Main content area, start typing to enter text.",
-        class: "simple-editor",
+        ...(isEditable && {
+          autocomplete: "off",
+          autocorrect: "off",
+          autocapitalize: "off",
+          "aria-label": "Main content area, start typing to enter text.",
+        }),
+        class: isReadonly ? "simple-editor readonly-editor" : "simple-editor",
       },
     },
     onUpdate: ({ editor }) => {
-      if (onChange) {
+      if (isEditable && onChange) {
         onChange(editor.getHTML())
       }
     },
@@ -241,8 +265,8 @@ export function SimpleEditor({ onChange, initialContent }: SimpleEditorProps = {
       StarterKit.configure({
         horizontalRule: false,
         link: {
-          openOnClick: false,
-          enableClickSelection: true,
+          openOnClick: isReadonly, // Allow link clicks in readonly mode
+          enableClickSelection: isEditable,
         },
       }),
       HorizontalRule,
@@ -256,22 +280,40 @@ export function SimpleEditor({ onChange, initialContent }: SimpleEditorProps = {
       Typography,
       Superscript,
       Subscript,
-      Selection,
+      ...(isEditable ? [Selection] : []),
+      ...(isEditable && placeholder ? [Placeholder.configure({ 
+        placeholder,
+        showOnlyWhenEditable: true,
+        showOnlyCurrent: true,
+      })] : []),
       DetailsNode,
       Youtube.configure({
         controls: false,
         nocookie: true,
       }),
-      ImageUploadNode.configure({
-        accept: "image/*",
-        maxSize: MAX_FILE_SIZE,
-        limit: 3,
-        upload: handleImageUpload,
-        onError: (error) => console.error("Upload failed:", error),
-      }),
+      // Only include ImageUploadNode in editable mode
+      ...(isEditable ? [
+        ImageUploadNode.configure({
+          accept: "image/*",
+          maxSize: MAX_FILE_SIZE,
+          limit: 3,
+          upload: handleImageUpload,
+          onError: (error) => console.error("Upload failed:", error),
+        })
+      ] : []),
     ],
-    content: initialContent || '',
+    content: editorContent || '',
   })
+
+  // Debug: Kiểm tra editor extensions sau khi được tạo
+  // useEffect(() => {
+  //   if (editor) {
+  //     console.log('Editor created with extensions:', editor.extensionManager.extensions.map(ext => ext.name))
+  //     console.log('Editor is editable:', editor.isEditable)
+  //     console.log('Editor content:', editor.getHTML())
+  //     console.log('Editor isEmpty:', editor.isEmpty)
+  //   }
+  // }, [editor])
 
   const rect = useCursorVisibility({
     editor,
@@ -284,59 +326,86 @@ export function SimpleEditor({ onChange, initialContent }: SimpleEditorProps = {
     }
   }, [isMobile, mobileView])
 
-  // Cập nhật content khi initialContent thay đổi
+  // Update content when initialContent/content changes
   useEffect(() => {
-    if (editor && initialContent && initialContent !== editor.getHTML()) {
-      // Use microtask to avoid flushSync conflicts during render
+    const newContent = isEditable ? initialContent : content
+    if (editor && newContent && newContent !== editor.getHTML()) {
       queueMicrotask(() => {
-        editor.commands.setContent(initialContent)
+        editor.commands.setContent(newContent)
+        // Call onContentRendered for readonly mode
+        if (isReadonly && onContentRendered) {
+          setTimeout(() => {
+            onContentRendered()
+          }, 100)
+        }
       })
     }
-  }, [editor, initialContent])
+  }, [editor, initialContent, content, isEditable, isReadonly, onContentRendered])
+
+  // Call onContentRendered when readonly editor is first initialized
+  useEffect(() => {
+    if (editor && isReadonly && content && onContentRendered) {
+      setTimeout(() => {
+        onContentRendered()
+      }, 100)
+    }
+  }, [editor, isReadonly, content, onContentRendered])
 
   return (
-    <div className="simple-editor-wrapper">
+    <div className={isReadonly ? "simple-editor-wrapper readonly-wrapper" : "simple-editor-wrapper editable-wrapper"}>
       <EditorContext.Provider value={{ editor }}>
-        <Toolbar
-          ref={toolbarRef}
-          style={{
-            ...(isMobile
-              ? {
-                  bottom: `calc(100% - ${height - rect.y}px)`,
+        {/* Only show toolbar in editable mode */}
+        {isEditable && (
+          <Toolbar
+            ref={toolbarRef}
+            style={{
+              ...(isMobile
+                ? {
+                    bottom: `calc(100% - ${height - rect.y}px)`,
+                  }
+                : {}),
+            }}
+          >
+            {mobileView === "main" ? (
+              <MainToolbarContent
+                onHighlighterClick={() => setMobileView("highlighter")}
+                onTextColorClick={() => setMobileView("textColor")}
+                onLinkClick={() => setMobileView("link")}
+                onYoutubeClick={() => setMobileView("youtube")}
+                isMobile={isMobile}
+              />
+            ) : (
+              <MobileToolbarContent
+                type={
+                  mobileView === "highlighter"
+                    ? "highlighter"
+                    : mobileView === "textColor"
+                    ? "textColor"
+                    : mobileView === "link"
+                    ? "link"
+                    : "youtube"
                 }
-              : {}),
-          }}
-        >
-          {mobileView === "main" ? (
-            <MainToolbarContent
-              onHighlighterClick={() => setMobileView("highlighter")}
-              onTextColorClick={() => setMobileView("textColor")}
-              onLinkClick={() => setMobileView("link")}
-              onYoutubeClick={() => setMobileView("youtube")}
-              isMobile={isMobile}
-            />
-          ) : (
-            <MobileToolbarContent
-              type={
-                mobileView === "highlighter"
-                  ? "highlighter"
-                  : mobileView === "textColor"
-                  ? "textColor"
-                  : mobileView === "link"
-                  ? "link"
-                  : "youtube"
-              }
-              onBack={() => setMobileView("main")}
-            />
-          )}
-        </Toolbar>
+                onBack={() => setMobileView("main")}
+              />
+            )}
+          </Toolbar>
+        )}
 
         <EditorContent
           editor={editor}
           role="presentation"
-          className="simple-editor-content"
+          className={isReadonly ? "simple-editor-content readonly-content" : "simple-editor-content"}
         />
       </EditorContext.Provider>
     </div>
   )
 }
+
+// Export convenience components for backward compatibility
+export const SimpleEditor = (props: { onChange?: (content: string) => void; initialContent?: string; placeholder?: string }) => (
+  <UnifiedEditor mode="editable" {...props} />
+)
+
+export const ReadonlyEditor = (props: { content?: string; onContentRendered?: () => void }) => (
+  <UnifiedEditor mode="readonly" {...props} />
+)
