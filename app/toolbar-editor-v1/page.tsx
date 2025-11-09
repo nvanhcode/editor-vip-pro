@@ -11,7 +11,6 @@ export default function Page() {
   const searchParams = useSearchParams()
   const placeholder = searchParams.get('placeholder') || ''
   const isReadonly = searchParams.get('isReadOnly') === '1'
-  const isCalHeight = searchParams.get('isCalHeight') === '1'
   
   const [content, setContent] = useState<string>('')
   const [initialContent, setInitialContent] = useState<string>('')
@@ -21,7 +20,7 @@ export default function Page() {
   const [proseMirrorElement, setProseMirrorElement] = useState<Element | null>(null)
   
   // Điều kiện để thực hiện height tracking: readonly mode luôn thực hiện, editable mode cần isCalHeight = true
-  const shouldTrackHeight = isReadonly || (!isReadonly && isCalHeight)
+  const shouldTrackHeight = isReadonly;
   
   // Sử dụng hook để theo dõi kích thước của ProseMirror content
   const rect = useElementRect({ 
