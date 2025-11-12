@@ -183,6 +183,8 @@ function ToolbarEditorContent() {
     // Lắng nghe message từ iframe cha
     const handleMessage = (event: MessageEvent) => {
       if (event.data.type === 'SET_INITIAL_CONTENT') {
+        console.log('DEBUG _ SET INIT CONTENT', event.data.content);
+        
         if (isReadonly) {
           setContent(event.data.content)
           setTimeout(() => {
