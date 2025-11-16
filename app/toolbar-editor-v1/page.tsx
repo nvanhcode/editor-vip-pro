@@ -198,6 +198,10 @@ function ToolbarEditorContent() {
             }, 100)
           }
         }
+        
+        window.parent.postMessage({
+          type: 'SET_INITIAL_CONTENT_DONE'
+        }, '*')
       } else if (event.data.type === 'REQUEST_HEIGHT' && shouldTrackHeight) {
         // Parent yêu cầu gửi lại height hiện tại
         setTimeout(() => {
