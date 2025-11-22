@@ -276,6 +276,7 @@ const TextArea: React.FC<TextAreaProps> = ({ value, onChange, placeholder }) => 
 export const ImageTextComboNode: React.FC<NodeViewProps> = (props) => {
   const { layout, accept, maxSize, imageUrl, textContent } = props.node.attrs
   const extension = props.extension
+  const isEditable = props.editor.isEditable
 
   const uploadOptions: UploadOptions = {
     maxSize,
@@ -304,6 +305,8 @@ export const ImageTextComboNode: React.FC<NodeViewProps> = (props) => {
   }, [props])
 
   const handleFileSelect = async (file: File) => {
+    if (!isEditable) return
+    
     setIsUploading(true)
     setUploadProgress(0)
 
@@ -321,16 +324,22 @@ export const ImageTextComboNode: React.FC<NodeViewProps> = (props) => {
   }
 
   const handleTextChange = useCallback((newText: string) => {
+    if (!isEditable) return
+    
     setCurrentTextContent(newText)
     updateNodeAttrs({ textContent: newText })
-  }, [updateNodeAttrs])
+  }, [updateNodeAttrs, isEditable])
 
   const handleRemoveImage = () => {
+    if (!isEditable) return
+    
     setCurrentImageUrl('')
     updateNodeAttrs({ imageUrl: '' })
   }
 
   const handleDeleteNode = () => {
+    if (!isEditable) return
+    
     const pos = props.getPos()
     if (isValidPosition(pos)) {
       props.editor
@@ -347,7 +356,7 @@ export const ImageTextComboNode: React.FC<NodeViewProps> = (props) => {
   const placeholderText = "Enter your text here..."
 
   return (
-    <NodeViewWrapper className={`image-text-combo-node layout-${layout}`}>
+    <NodeViewWrapper className={`image-text-combo-node layout-${layout} ${isEditable ? 'editable' : 'readonly'}`}>
       <div className="image-text-combo-container">
         <div className="image-text-combo-content">
           <div className={`image-section ${isImageLeft ? 'left' : 'right'}`}>
@@ -355,18 +364,20 @@ export const ImageTextComboNode: React.FC<NodeViewProps> = (props) => {
               <div className="image-display">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img src={currentImageUrl} alt="Uploaded" className="uploaded-image" />
-                <div className="image-actions">
-                  <Button
-                    type="button"
-                    data-style="ghost"
-                    onClick={handleRemoveImage}
-                    title="Remove image"
-                  >
-                    <CloseIcon className="tiptap-button-icon" />
-                  </Button>
-                </div>
+                {isEditable && (
+                  <div className="image-actions">
+                    <Button
+                      type="button"
+                      data-style="ghost"
+                      onClick={handleRemoveImage}
+                      title="Remove image"
+                    >
+                      <CloseIcon className="tiptap-button-icon" />
+                    </Button>
+                  </div>
+                )}
               </div>
-            ) : (
+            ) : isEditable ? (
               <ImageUploadArea
                 onFileSelect={handleFileSelect}
                 accept={accept}
@@ -374,28 +385,44 @@ export const ImageTextComboNode: React.FC<NodeViewProps> = (props) => {
                 isUploading={isUploading}
                 progress={uploadProgress}
               />
+            ) : (
+              <div className="image-placeholder">
+                <span>Image not available</span>
+              </div>
             )}
           </div>
 
           <div className={`text-section ${isImageLeft ? 'right' : 'left'}`}>
-            <TextArea
-              value={currentTextContent}
-              onChange={handleTextChange}
-              placeholder={placeholderText}
-            />
+            {isEditable ? (
+              <TextArea
+                value={currentTextContent}
+                onChange={handleTextChange}
+                placeholder={placeholderText}
+              />
+            ) : (
+              <div className="text-display">
+                {currentTextContent ? (
+                  <div className="text-content">{currentTextContent}</div>
+                ) : (
+                  <div className="text-placeholder">No text content</div>
+                )}
+              </div>
+            )}
           </div>
         </div>
 
-        <div className="image-text-combo-actions">
-          <Button
-            type="button"
-            data-style="ghost"
-            onClick={handleDeleteNode}
-            title="Delete this block"
-          >
-            <TrashIcon className="tiptap-button-icon" />
-          </Button>
-        </div>
+        {isEditable && (
+          <div className="image-text-combo-actions">
+            <Button
+              type="button"
+              data-style="ghost"
+              onClick={handleDeleteNode}
+              title="Delete this block"
+            >
+              <TrashIcon className="tiptap-button-icon" />
+            </Button>
+          </div>
+        )}
       </div>
     </NodeViewWrapper>
   )

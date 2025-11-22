@@ -292,18 +292,19 @@ export function UnifiedEditor({
         controls: false,
         nocookie: true,
       }),
+      // ImageTextComboNode for both editable and readonly modes
+      ImageTextComboNode.configure({
+        accept: "image/*",
+        maxSize: MAX_FILE_SIZE,
+        upload: handleImageUpload,
+        onError: (error) => console.error("Upload failed:", error),
+      }),
       // Only include ImageUploadNode in editable mode
       ...(isEditable ? [
         ImageUploadNode.configure({
           accept: "image/*",
           maxSize: MAX_FILE_SIZE,
           limit: 3,
-          upload: handleImageUpload,
-          onError: (error) => console.error("Upload failed:", error),
-        }),
-        ImageTextComboNode.configure({
-          accept: "image/*",
-          maxSize: MAX_FILE_SIZE,
           upload: handleImageUpload,
           onError: (error) => console.error("Upload failed:", error),
         })

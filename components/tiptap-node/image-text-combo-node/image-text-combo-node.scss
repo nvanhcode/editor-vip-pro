@@ -207,8 +207,48 @@
   }
 }
 
+/* Readonly mode text display */
+.text-display {
+  .text-content {
+    font-size: 0.875rem;
+    line-height: 1.5;
+    color: #374151;
+    white-space: pre-wrap;
+    word-break: break-word;
+  }
+
+  .text-placeholder {
+    font-size: 0.875rem;
+    color: #9ca3af;
+    font-style: italic;
+  }
+}
+
+/* Image placeholder for readonly mode */
+.image-placeholder {
+  min-height: 200px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #f3f4f6;
+  color: #9ca3af;
+  font-size: 0.875rem;
+  font-style: italic;
+}
+
+/* Readonly mode adjustments */
+.image-text-combo-node.readonly {
+  .image-text-combo-actions {
+    display: none;
+  }
+  
+  .image-actions {
+    display: none;
+  }
+}
+
 /* Responsive Mobile Overrides */
-@media (max-width: 450px) {
+@media (max-width: 750px) {
   .image-text-combo-node {
     .image-text-combo-content {
       gap: 0.75rem;
