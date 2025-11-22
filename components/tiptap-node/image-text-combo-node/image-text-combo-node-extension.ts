@@ -135,6 +135,43 @@ export const ImageTextComboNode = Node.create<ImageTextComboNodeOptions>({
       // Track initial content to populate editor
       hasInitialContent: {
         default: false,
+      },
+      // Image configuration attributes
+      imageWidth: {
+        default: null,
+        parseHTML: element => element.getAttribute('data-image-width'),
+        renderHTML: attributes => {
+          if (!attributes.imageWidth) {
+            return {}
+          }
+          return {
+            'data-image-width': attributes.imageWidth,
+          }
+        },
+      },
+      imageHeight: {
+        default: null,
+        parseHTML: element => element.getAttribute('data-image-height'),
+        renderHTML: attributes => {
+          if (!attributes.imageHeight) {
+            return {}
+          }
+          return {
+            'data-image-height': attributes.imageHeight,
+          }
+        },
+      },
+      imageBorderRadius: {
+        default: null,
+        parseHTML: element => element.getAttribute('data-image-border-radius'),
+        renderHTML: attributes => {
+          if (!attributes.imageBorderRadius) {
+            return {}
+          }
+          return {
+            'data-image-border-radius': attributes.imageBorderRadius,
+          }
+        },
       }
     }
   },

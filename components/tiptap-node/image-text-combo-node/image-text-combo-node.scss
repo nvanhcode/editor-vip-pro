@@ -163,11 +163,22 @@
   overflow: visible; /* Changed from hidden to visible to allow full image display */
 
   .uploaded-image {
+    /* Default styles - these will be overridden by inline styles */
     width: 100%;
-    height: auto; /* Keep aspect ratio */
-    /* Removed max-height constraint to preserve original height */
-    object-fit: contain; /* Changed from cover to contain to preserve full image */
-    display: block; /* Ensure proper display */
+    height: auto;
+    
+    /* Base styles that should not be overridden */
+    object-fit: contain;
+    display: block;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    max-width: none;
+    
+    /* Hover effect to indicate double-click availability */
+    &:hover {
+      opacity: 0.9;
+      transform: scale(1.01);
+    }
   }
 
   .image-actions {

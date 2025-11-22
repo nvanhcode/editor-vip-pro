@@ -6,6 +6,7 @@ import { NodeViewWrapper, NodeViewContent } from "@tiptap/react"
 import { Button } from "@/components/tiptap-ui-primitive/button"
 import { CloseIcon } from "@/components/tiptap-icons/close-icon"
 import { TrashIcon } from "@/components/tiptap-icons/trash-icon"
+import { ImageConfigPopup, type ImageConfig } from "@/components/tiptap-ui/image-config-popup"
 import "@/components/tiptap-node/image-text-combo-node/image-text-combo-node.scss"
 import { focusNextNode, isValidPosition } from "@/lib/tiptap-utils"
 
@@ -264,7 +265,7 @@ const TextArea: React.FC<TextAreaProps> = ({ isEditable }) => {
 
 export const ImageTextComboNode: React.FC<NodeViewProps> = (props) => {
   const { node, editor, getPos } = props
-  const { layout, accept, maxSize, imageUrl } = node.attrs
+  const { layout, accept, maxSize, imageUrl, imageWidth, imageHeight, imageBorderRadius } = node.attrs
   const extension = props.extension
   const isEditable = editor.isEditable
 
@@ -280,11 +281,41 @@ export const ImageTextComboNode: React.FC<NodeViewProps> = (props) => {
   const [currentImageUrl, setCurrentImageUrl] = useState<string>(imageUrl || '')
   const [isUploading, setIsUploading] = useState(false)
   const [uploadProgress, setUploadProgress] = useState(0)
+  const [showImageConfigPopup, setShowImageConfigPopup] = useState(false)
+  const imageRef = useRef<HTMLImageElement>(null)
 
   // Sync imageUrl from node attrs when it changes
   useEffect(() => {
     setCurrentImageUrl(imageUrl || '')
   }, [imageUrl])
+
+  // Force re-render when image configuration attributes change
+  useEffect(() => {
+    console.log('Image config attributes changed:', { imageWidth, imageHeight, imageBorderRadius })
+    
+    // Directly apply styles to DOM element with !important
+    if (imageRef.current) {
+      const img = imageRef.current
+      
+      // Clear existing styles first
+      img.style.removeProperty('width')
+      img.style.removeProperty('height')
+      img.style.removeProperty('border-radius')
+      
+      // Apply new styles with !important
+      if (imageWidth && imageWidth.trim() !== '') {
+        img.style.setProperty('width', imageWidth, 'important')
+      }
+      if (imageHeight && imageHeight.trim() !== '') {
+        img.style.setProperty('height', imageHeight, 'important')
+      }
+      if (imageBorderRadius && imageBorderRadius.trim() !== '') {
+        img.style.setProperty('border-radius', imageBorderRadius, 'important')
+      }
+      
+      console.log('Applied DOM styles:', img.style.cssText)
+    }
+  }, [imageWidth, imageHeight, imageBorderRadius])
 
   const updateNodeAttrs = useCallback((attrs: Partial<typeof node.attrs>) => {
     const pos = getPos()
@@ -375,6 +406,34 @@ export const ImageTextComboNode: React.FC<NodeViewProps> = (props) => {
     }
   }
 
+  const handleImageDoubleClick = () => {
+    if (!isEditable || !currentImageUrl) return
+    setShowImageConfigPopup(true)
+  }
+
+  const handleImageConfigSave = (config: ImageConfig) => {
+    console.log('Saving image config:', config)
+    
+    const newAttrs = {
+      imageWidth: config.width || null,
+      imageHeight: config.height || null,
+      imageBorderRadius: config.borderRadius || null,
+    }
+    
+    console.log('New attributes:', newAttrs)
+    updateNodeAttrs(newAttrs)
+    
+    // Force component re-render by triggering state update
+    setTimeout(() => {
+      setCurrentImageUrl(prev => prev + '')
+    }, 10)
+  }
+
+  const getImageStyles = (): React.CSSProperties => {
+    // Return basic styles, the real styles will be applied via useEffect
+    return {}
+  }
+
   const isImageLeft = layout === "image-left-text-right"
 
   return (
@@ -385,7 +444,15 @@ export const ImageTextComboNode: React.FC<NodeViewProps> = (props) => {
             {currentImageUrl ? (
               <div className="image-display">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src={currentImageUrl} alt="Uploaded" className="uploaded-image" />
+                <img 
+                  ref={imageRef}
+                  key={`${imageWidth}-${imageHeight}-${imageBorderRadius}`}
+                  src={currentImageUrl} 
+                  alt="Uploaded" 
+                  className="uploaded-image"
+                  style={getImageStyles()}
+                  onDoubleClick={handleImageDoubleClick}
+                />
                 {isEditable && (
                   <div className="image-actions">
                     <Button
@@ -428,6 +495,21 @@ export const ImageTextComboNode: React.FC<NodeViewProps> = (props) => {
           </div>
         )}
       </div>
+
+      {/* Image Configuration Popup */}
+      {isEditable && (
+        <ImageConfigPopup
+          isOpen={showImageConfigPopup}
+          onClose={() => setShowImageConfigPopup(false)}
+          onSave={handleImageConfigSave}
+          initialConfig={{
+            width: imageWidth || '',
+            height: imageHeight || '',
+            borderRadius: imageBorderRadius || '',
+          }}
+          title="Image Configuration"
+        />
+      )}
     </NodeViewWrapper>
   )
 }
