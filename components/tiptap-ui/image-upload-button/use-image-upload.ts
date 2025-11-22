@@ -74,6 +74,37 @@ export function insertImage(editor: Editor | null): boolean {
 }
 
 /**
+ * Inserts an image-text combo node in the editor
+ */
+export function insertImageTextCombo(editor: Editor | null, layout: "image-left-text-right" | "image-right-text-left"): boolean {
+  if (!editor || !editor.isEditable) return false
+
+  console.log('Attempting to insert imageTextCombo with layout:', layout);
+  console.log('Available extensions:', editor.extensionManager.extensions.map(ext => ext.name));
+
+  try {
+    const result = editor
+      .chain()
+      .focus()
+      .insertContent({
+        type: "imageTextCombo",
+        attrs: {
+          layout,
+          accept: "image/*",
+          maxSize: 10 * 1024 * 1024, // 10MB default
+        },
+      })
+      .run()
+    
+    console.log('Insert result:', result);
+    return result;
+  } catch (error) {
+    console.error('Error inserting imageTextCombo:', error);
+    return false
+  }
+}
+
+/**
  * Determines if the image button should be shown
  */
 export function shouldShowButton(props: {
@@ -167,6 +198,16 @@ export function useImageUpload(config?: UseImageUploadConfig) {
     return success
   }, [editor, onInserted])
 
+  const handleImageTextCombo = useCallback((layout: "image-left-text-right" | "image-right-text-left") => {
+    if (!editor) return false
+
+    const success = insertImageTextCombo(editor, layout)
+    if (success) {
+      onInserted?.()
+    }
+    return success
+  }, [editor, onInserted])
+
   useHotkeys(
     IMAGE_UPLOAD_SHORTCUT_KEY,
     (event) => {
@@ -184,6 +225,7 @@ export function useImageUpload(config?: UseImageUploadConfig) {
     isVisible,
     isActive,
     handleImage,
+    handleImageTextCombo,
     canInsert,
     label: "Add image",
     shortcutKeys: IMAGE_UPLOAD_SHORTCUT_KEY,

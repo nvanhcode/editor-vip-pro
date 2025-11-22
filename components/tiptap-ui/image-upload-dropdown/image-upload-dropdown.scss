@@ -1,0 +1,88 @@
+/* Styles for image upload dropdown */
+.image-upload-dropdown-content {
+  min-width: 220px;
+  padding: 6px;
+  background: #fff;
+  border-radius: 8px;
+  box-shadow: 0 6px 18px rgba(15, 23, 42, 0.12);
+  font-family: inherit;
+  color: #0f172a;
+}
+
+.image-upload-dropdown-item {
+  padding: 0;
+  margin: 0;
+  list-style: none;
+}
+
+.image-upload-option {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  width: 100%;
+  border: none;
+  background: transparent;
+  padding: 8px 10px;
+  text-align: left;
+  cursor: pointer;
+  border-radius: 6px;
+  transition: background-color 0.12s ease, transform 0.06s ease;
+}
+
+.image-upload-option:hover,
+.image-upload-option:focus {
+  background: #f8fafc;
+  transform: translateY(-1px);
+  outline: none;
+}
+
+.image-upload-option:active {
+  transform: translateY(0);
+}
+
+.option-icon {
+  width: 40px;
+  height: 28px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: #475569;
+  flex: 0 0 40px;
+}
+
+.option-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  overflow: hidden;
+}
+
+.option-title {
+  font-size: 13px;
+  font-weight: 600;
+  color: #0f172a;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.option-desc {
+  font-size: 12px;
+  color: #6b7280;
+  line-height: 1.2;
+  white-space: normal;
+}
+
+/* keyboard / focus visible friendly */
+.image-upload-option:focus-visible {
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.12);
+}
+
+@media (max-width: 640px) {
+  .image-upload-dropdown-content {
+    min-width: 180px;
+  }
+  .option-icon {
+    flex: 0 0 34px;
+  }
+}

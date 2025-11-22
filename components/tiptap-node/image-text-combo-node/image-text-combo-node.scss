@@ -1,0 +1,227 @@
+/* Image Text Combo Node Styles */
+
+.image-text-combo-node {
+  transition: border-color 0.2s ease;
+
+  &.layout-image-left-text-right {
+    .image-text-combo-content {
+      display: flex;
+      gap: 1rem;
+      align-items: flex-start;
+      
+      .image-section.left {
+        flex: 0 0 40%;
+        order: 1;
+      }
+      
+      .text-section.right {
+        flex: 1;
+        order: 2;
+      }
+
+      /* Mobile layout: stack vertically */
+      @media (max-width: 767px) {
+        flex-direction: column;
+        
+        .image-section.left {
+          flex: none;
+          width: 100%;
+          order: 1; /* Image on top for mobile */
+        }
+        
+        .text-section.right {
+          flex: none;
+          width: 100%;
+          order: 2; /* Text below for mobile */
+        }
+      }
+    }
+  }
+
+  &.layout-image-right-text-left {
+    .image-text-combo-content {
+      display: flex;
+      gap: 1rem;
+      align-items: flex-start;
+      
+      .text-section.left {
+        flex: 1;
+        order: 1;
+      }
+      
+      .image-section.right {
+        flex: 0 0 40%;
+        order: 2;
+      }
+
+      /* Mobile layout: stack vertically */
+      @media (max-width: 767px) {
+        flex-direction: column;
+        
+        .text-section.left {
+          flex: none;
+          width: 100%;
+          order: 1; /* Text on top for mobile */
+        }
+        
+        .image-section.right {
+          flex: none;
+          width: 100%;
+          order: 2; /* Image below for mobile */
+        }
+      }
+    }
+  }
+
+  .image-text-combo-container {
+    position: relative;
+  }
+
+  .image-text-combo-content {
+    /* Default: will be overridden by specific layout classes above */
+    .image-section,
+    .text-section {
+      width: 100%;
+    }
+  }
+
+  .image-text-combo-actions {
+    position: absolute;
+    top: 0.5rem;
+    right: 0.5rem;
+    display: flex;
+    gap: 0.25rem;
+    opacity: 0;
+    transition: opacity 0.2s ease;
+  }
+
+  &:hover .image-text-combo-actions {
+    opacity: 1;
+  }
+}
+
+/* Image Upload Area */
+.image-text-combo-upload-area {
+  min-height: 200px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  position: relative;
+  overflow: hidden;
+  background: #f9fafb;
+
+  &.uploading {
+    cursor: not-allowed;
+    opacity: 0.7;
+  }
+
+  .upload-progress {
+    position: absolute;
+    top: 0;
+    left: 0;
+    height: 4px;
+    background: #3b82f6;
+    transition: width 0.3s ease;
+    z-index: 1;
+  }
+
+  .upload-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 1rem;
+    text-align: center;
+
+    .tiptap-image-upload-icon {
+      width: 2rem;
+      height: 2rem;
+      color: #6b7280;
+    }
+
+    .upload-text {
+      font-size: 0.875rem;
+      font-weight: 500;
+      color: #374151;
+    }
+
+    .upload-subtext {
+      font-size: 0.75rem;
+      color: #6b7280;
+    }
+  }
+}
+
+/* Image Display */
+.image-display {
+  position: relative;
+  overflow: hidden;
+
+  .uploaded-image {
+    width: 100%;
+    height: auto;
+    max-height: 300px;
+    object-fit: cover;
+  }
+
+  .image-actions {
+    position: absolute;
+    top: 0.5rem;
+    right: 0.5rem;
+    display: flex;
+    gap: 0.25rem;
+    opacity: 0;
+    transition: opacity 0.2s ease;
+  }
+
+  &:hover .image-actions {
+    opacity: 1;
+  }
+}
+
+/* Text Area */
+.image-text-combo-text-area {
+  .text-content-input {
+    width: 100%;
+    min-height: 120px;
+    padding: 0.75rem;
+    font-size: 0.875rem;
+    line-height: 1.5;
+    resize: none;
+    outline: none;
+    font-family: inherit;
+    background: white;
+    transition: border-color 0.2s ease;
+    border: none;
+
+    &:focus {
+      box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+    }
+
+    &::placeholder {
+      color: #9ca3af;
+    }
+  }
+}
+
+/* Responsive Mobile Overrides */
+@media (max-width: 450px) {
+  .image-text-combo-node {
+    .image-text-combo-content {
+      gap: 0.75rem;
+    }
+    
+    .image-text-combo-upload-area {
+      min-height: 150px;
+    }
+    
+    .image-text-combo-text-area .text-content-input {
+      min-height: 100px;
+      padding: 0.5rem;
+      font-size: 0.8rem;
+    }
+  }
+}

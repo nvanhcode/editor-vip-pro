@@ -30,6 +30,7 @@ import {
 
 // --- Tiptap Node ---
 import { ImageUploadNode } from "@/components/tiptap-node/image-upload-node/image-upload-node-extension"
+import { ImageTextComboNode } from "@/components/tiptap-node/image-text-combo-node/image-text-combo-node-extension"
 import { HorizontalRule } from "@/components/tiptap-node/horizontal-rule-node/horizontal-rule-node-extension"
 import { DetailsNode } from "@/components/tiptap-node/details-node/details-node-extension"
 import "@/components/tiptap-node/blockquote-node/blockquote-node.scss"
@@ -43,7 +44,7 @@ import "@/components/tiptap-node/details-node/details-node.scss"
 
 // --- Tiptap UI ---
 import { HeadingDropdownMenu } from "@/components/tiptap-ui/heading-dropdown-menu"
-import { ImageUploadButton } from "@/components/tiptap-ui/image-upload-button"
+import { ImageUploadDropdown } from "@/components/tiptap-ui/image-upload-dropdown"
 import { ListDropdownMenu } from "@/components/tiptap-ui/list-dropdown-menu"
 import { BlockquoteButton } from "@/components/tiptap-ui/blockquote-button"
 import { CodeBlockButton } from "@/components/tiptap-ui/code-block-button"
@@ -155,7 +156,7 @@ const MainToolbarContent = ({
       <ToolbarSeparator />
 
       <ToolbarGroup>
-        <ImageUploadButton text="Add" />
+        <ImageUploadDropdown text="Add" portal={isMobile} />
         {!isMobile ? (
           <YoutubeButton />
         ) : (
@@ -297,6 +298,12 @@ export function UnifiedEditor({
           accept: "image/*",
           maxSize: MAX_FILE_SIZE,
           limit: 3,
+          upload: handleImageUpload,
+          onError: (error) => console.error("Upload failed:", error),
+        }),
+        ImageTextComboNode.configure({
+          accept: "image/*",
+          maxSize: MAX_FILE_SIZE,
           upload: handleImageUpload,
           onError: (error) => console.error("Upload failed:", error),
         })
