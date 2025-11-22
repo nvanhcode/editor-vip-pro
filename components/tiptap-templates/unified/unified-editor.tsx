@@ -277,7 +277,13 @@ export function UnifiedEditor({
       Highlight.configure({ multicolor: true }),
       TextStyle,
       Color,
-      Image,
+      Image.configure({
+        inline: false,
+        allowBase64: true,
+        HTMLAttributes: {
+          class: 'editor-image',
+        },
+      }),
       Typography,
       Superscript,
       Subscript,
@@ -314,14 +320,14 @@ export function UnifiedEditor({
   })
 
   // Debug: Kiểm tra editor extensions sau khi được tạo
-  // useEffect(() => {
-  //   if (editor) {
-  //     console.log('Editor created with extensions:', editor.extensionManager.extensions.map(ext => ext.name))
-  //     console.log('Editor is editable:', editor.isEditable)
-  //     console.log('Editor content:', editor.getHTML())
-  //     console.log('Editor isEmpty:', editor.isEmpty)
-  //   }
-  // }, [editor])
+  useEffect(() => {
+    if (editor) {
+      console.log('Editor created with extensions:', editor.extensionManager.extensions.map(ext => ext.name))
+      console.log('Editor is editable:', editor.isEditable)
+      console.log('Editor content:', editor.getHTML())
+      console.log('Editor isEmpty:', editor.isEmpty)
+    }
+  }, [editor])
 
   const rect = useCursorVisibility({
     editor,
@@ -337,7 +343,9 @@ export function UnifiedEditor({
   // Update content when initialContent/content changes
   useEffect(() => {
     const newContent = isEditable ? initialContent : content
+    console.log('Content loading:', { isEditable, newContent, currentHTML: editor?.getHTML() })
     if (editor && newContent && newContent !== editor.getHTML()) {
+      console.log('Setting new content:', newContent)
       queueMicrotask(() => {
         editor.commands.setContent(newContent)
         // Call onContentRendered for readonly mode
