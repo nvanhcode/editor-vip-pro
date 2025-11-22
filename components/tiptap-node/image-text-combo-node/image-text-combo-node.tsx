@@ -1,8 +1,8 @@
 "use client"
 
-import { useRef, useState, useCallback } from "react"
+import { useRef, useState, useCallback, useEffect } from "react"
 import type { NodeViewProps } from "@tiptap/react"
-import { NodeViewWrapper } from "@tiptap/react"
+import { NodeViewWrapper, NodeViewContent } from "@tiptap/react"
 import { Button } from "@/components/tiptap-ui-primitive/button"
 import { CloseIcon } from "@/components/tiptap-icons/close-icon"
 import { TrashIcon } from "@/components/tiptap-icons/trash-icon"
@@ -241,42 +241,32 @@ const ImageUploadArea: React.FC<ImageUploadAreaProps> = ({
 }
 
 interface TextAreaProps {
-  value: string
-  onChange: (value: string) => void
-  placeholder: string
+  isEditable: boolean
 }
 
-const TextArea: React.FC<TextAreaProps> = ({ value, onChange, placeholder }) => {
-  const textareaRef = useRef<HTMLTextAreaElement>(null)
-
-  const handleChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
-    onChange(e.target.value)
-    
-    // Auto-resize textarea
-    if (textareaRef.current) {
-      textareaRef.current.style.height = 'auto'
-      textareaRef.current.style.height = `${textareaRef.current.scrollHeight}px`
-    }
+const TextArea: React.FC<TextAreaProps> = ({ isEditable }) => {
+  if (!isEditable) {
+    // For readonly mode, render the content as static
+    return (
+      <div className="image-text-combo-text-area readonly">
+        <NodeViewContent className="text-content-display" />
+      </div>
+    )
   }
 
+  // For editable mode, render as editable content
   return (
     <div className="image-text-combo-text-area">
-      <textarea
-        ref={textareaRef}
-        value={value}
-        onChange={handleChange}
-        placeholder={placeholder}
-        rows={3}
-        className="text-content-input"
-      />
+      <NodeViewContent className="text-content-input" />
     </div>
   )
 }
 
 export const ImageTextComboNode: React.FC<NodeViewProps> = (props) => {
-  const { layout, accept, maxSize, imageUrl, textContent } = props.node.attrs
+  const { node, editor, getPos } = props
+  const { layout, accept, maxSize, imageUrl } = node.attrs
   const extension = props.extension
-  const isEditable = props.editor.isEditable
+  const isEditable = editor.isEditable
 
   const uploadOptions: UploadOptions = {
     maxSize,
@@ -288,21 +278,61 @@ export const ImageTextComboNode: React.FC<NodeViewProps> = (props) => {
 
   const { uploadFile, clearAllFiles } = useFileUpload(uploadOptions)
   const [currentImageUrl, setCurrentImageUrl] = useState<string>(imageUrl || '')
-  const [currentTextContent, setCurrentTextContent] = useState<string>(textContent || '')
   const [isUploading, setIsUploading] = useState(false)
   const [uploadProgress, setUploadProgress] = useState(0)
 
-  const updateNodeAttrs = useCallback((attrs: Partial<typeof props.node.attrs>) => {
-    const pos = props.getPos()
+  // Sync imageUrl from node attrs when it changes
+  useEffect(() => {
+    setCurrentImageUrl(imageUrl || '')
+  }, [imageUrl])
+
+  const updateNodeAttrs = useCallback((attrs: Partial<typeof node.attrs>) => {
+    const pos = getPos()
     if (isValidPosition(pos)) {
-      props.editor.view.dispatch(
-        props.editor.view.state.tr.setNodeMarkup(pos, undefined, {
-          ...props.node.attrs,
+      editor.view.dispatch(
+        editor.view.state.tr.setNodeMarkup(pos, undefined, {
+          ...node.attrs,
           ...attrs,
         })
       )
     }
-  }, [props])
+  }, [node, getPos, editor])
+
+  // Listen to content changes and store text content in attrs
+  useEffect(() => {
+    if (!isEditable) return
+
+    const updateTextContent = () => {
+      const pos = getPos()
+      if (isValidPosition(pos)) {
+        const nodeAfter = editor.state.doc.nodeAt(pos)
+        if (nodeAfter) {
+          // Extract text content from the node
+          let textContent = ''
+          nodeAfter.content.forEach((child) => {
+            if (child.textContent) {
+              textContent += child.textContent
+            }
+          })
+          
+          // Update the textContent attribute if it has changed
+          if (textContent !== node.attrs.textContent) {
+            updateNodeAttrs({ textContent })
+          }
+        }
+      }
+    }
+
+    const handleTransaction = () => {
+      setTimeout(updateTextContent, 0)
+    }
+
+    editor.on('transaction', handleTransaction)
+    
+    return () => {
+      editor.off('transaction', handleTransaction)
+    }
+  }, [isEditable, editor, node.attrs.textContent, getPos, updateNodeAttrs])
 
   const handleFileSelect = async (file: File) => {
     if (!isEditable) return
@@ -323,13 +353,6 @@ export const ImageTextComboNode: React.FC<NodeViewProps> = (props) => {
     }
   }
 
-  const handleTextChange = useCallback((newText: string) => {
-    if (!isEditable) return
-    
-    setCurrentTextContent(newText)
-    updateNodeAttrs({ textContent: newText })
-  }, [updateNodeAttrs, isEditable])
-
   const handleRemoveImage = () => {
     if (!isEditable) return
     
@@ -340,20 +363,19 @@ export const ImageTextComboNode: React.FC<NodeViewProps> = (props) => {
   const handleDeleteNode = () => {
     if (!isEditable) return
     
-    const pos = props.getPos()
+    const pos = getPos()
     if (isValidPosition(pos)) {
-      props.editor
+      editor
         .chain()
         .focus()
-        .deleteRange({ from: pos, to: pos + props.node.nodeSize })
+        .deleteRange({ from: pos, to: pos + node.nodeSize })
         .run()
       
-      focusNextNode(props.editor)
+      focusNextNode(editor)
     }
   }
 
   const isImageLeft = layout === "image-left-text-right"
-  const placeholderText = "Enter your text here..."
 
   return (
     <NodeViewWrapper className={`image-text-combo-node layout-${layout} ${isEditable ? 'editable' : 'readonly'}`}>
@@ -385,29 +407,11 @@ export const ImageTextComboNode: React.FC<NodeViewProps> = (props) => {
                 isUploading={isUploading}
                 progress={uploadProgress}
               />
-            ) : (
-              <div className="image-placeholder">
-                <span>Image not available</span>
-              </div>
-            )}
+            ) : null }
           </div>
 
           <div className={`text-section ${isImageLeft ? 'right' : 'left'}`}>
-            {isEditable ? (
-              <TextArea
-                value={currentTextContent}
-                onChange={handleTextChange}
-                placeholder={placeholderText}
-              />
-            ) : (
-              <div className="text-display">
-                {currentTextContent ? (
-                  <div className="text-content">{currentTextContent}</div>
-                ) : (
-                  <div className="text-placeholder">No text content</div>
-                )}
-              </div>
-            )}
+            <TextArea isEditable={isEditable} />
           </div>
         </div>
 

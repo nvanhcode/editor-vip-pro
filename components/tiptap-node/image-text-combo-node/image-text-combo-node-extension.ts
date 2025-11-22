@@ -71,7 +71,9 @@ export const ImageTextComboNode = Node.create<ImageTextComboNodeOptions>({
 
   selectable: true,
 
-  atom: true,
+  content: "block+", // Allow block content inside
+
+  isolating: true, // Prevent content from leaking out
 
   addOptions() {
     return {
@@ -129,12 +131,34 @@ export const ImageTextComboNode = Node.create<ImageTextComboNodeOptions>({
             'data-text-content': attributes.textContent,
           }
         },
+      },
+      // Track initial content to populate editor
+      hasInitialContent: {
+        default: false,
       }
     }
   },
 
   parseHTML() {
-    return [{ tag: 'div[data-type="image-text-combo"]' }]
+    return [
+      { 
+        tag: 'div[data-type="image-text-combo"]',
+        getAttrs: (element) => {
+          if (typeof element === 'string') return false
+          
+          const imageUrl = element.getAttribute('data-image-url') || 
+                           element.querySelector('img')?.getAttribute('src') || ''
+          const layout = element.getAttribute('data-layout') || 'image-left-text-right'
+          
+          return {
+            imageUrl,
+            layout,
+            accept: 'image/*',
+            maxSize: 0,
+          }
+        },
+      }
+    ]
   },
 
   renderHTML({ HTMLAttributes }) {
@@ -145,6 +169,7 @@ export const ImageTextComboNode = Node.create<ImageTextComboNodeOptions>({
         this.options.HTMLAttributes || {},
         HTMLAttributes
       ),
+      0
     ]
   },
 
@@ -160,6 +185,17 @@ export const ImageTextComboNode = Node.create<ImageTextComboNodeOptions>({
           return commands.insertContent({
             type: this.name,
             attrs: options,
+            content: [
+              {
+                type: "paragraph",
+                content: [
+                  {
+                    type: "text",
+                    text: "Enter your text here..."
+                  }
+                ]
+              }
+            ]
           })
         },
     }

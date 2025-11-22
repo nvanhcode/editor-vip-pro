@@ -7,21 +7,22 @@
     .image-text-combo-content {
       display: flex;
       gap: 1rem;
-      align-items: flex-start;
+      align-items: center;
       
       .image-section.left {
-        flex: 0 0 40%;
+        flex: 0 0 50%; /* Ảnh chiếm 50% width */
         order: 1;
       }
       
       .text-section.right {
-        flex: 1;
+        flex: 0 0 50%; /* Text chiếm 50% width */
         order: 2;
       }
 
       /* Mobile layout: stack vertically */
       @media (max-width: 767px) {
         flex-direction: column;
+        align-items: flex-start; /* Reset alignment for mobile */
         
         .image-section.left {
           flex: none;
@@ -42,21 +43,22 @@
     .image-text-combo-content {
       display: flex;
       gap: 1rem;
-      align-items: flex-start;
+      align-items: center;
       
       .text-section.left {
-        flex: 1;
+        flex: 0 0 50%; /* Text chiếm 50% width */
         order: 1;
       }
       
       .image-section.right {
-        flex: 0 0 40%;
+        flex: 0 0 50%; /* Ảnh chiếm 50% width */
         order: 2;
       }
 
       /* Mobile layout: stack vertically */
       @media (max-width: 767px) {
         flex-direction: column;
+        align-items: flex-start; /* Reset alignment for mobile */
         
         .text-section.left {
           flex: none;
@@ -158,13 +160,14 @@
 /* Image Display */
 .image-display {
   position: relative;
-  overflow: hidden;
+  overflow: visible; /* Changed from hidden to visible to allow full image display */
 
   .uploaded-image {
     width: 100%;
-    height: auto;
-    max-height: 300px;
-    object-fit: cover;
+    height: auto; /* Keep aspect ratio */
+    /* Removed max-height constraint to preserve original height */
+    object-fit: contain; /* Changed from cover to contain to preserve full image */
+    display: block; /* Ensure proper display */
   }
 
   .image-actions {
@@ -175,6 +178,7 @@
     gap: 0.25rem;
     opacity: 0;
     transition: opacity 0.2s ease;
+    z-index: 2; /* Ensure actions are above image */
   }
 
   &:hover .image-actions {
@@ -186,11 +190,10 @@
 .image-text-combo-text-area {
   .text-content-input {
     width: 100%;
-    min-height: 120px;
+    // min-height: 120px;
     padding: 0.75rem;
     font-size: 0.875rem;
     line-height: 1.5;
-    resize: none;
     outline: none;
     font-family: inherit;
     background: white;
@@ -201,39 +204,74 @@
       box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
     }
 
-    &::placeholder {
-      color: #9ca3af;
+    // Style for Tiptap content
+    .ProseMirror {
+      outline: none;
+      border: none;
+    //   min-height: 120px;
+      padding: 0;
+      margin: 0;
+
+      p {
+        margin: 0;
+        line-height: 1.5;
+        
+        &:first-child {
+          margin-top: 0;
+        }
+        
+        &:last-child {
+          margin-bottom: 0;
+        }
+        
+        &:not(:last-child) {
+          margin-bottom: 0.5rem;
+        }
+      }
+
+      // Placeholder styles
+      &.is-editor-empty:first-child::before {
+        content: attr(data-placeholder);
+        float: left;
+        color: #9ca3af;
+        pointer-events: none;
+        height: 0;
+      }
     }
   }
-}
 
-/* Readonly mode text display */
-.text-display {
-  .text-content {
+  .text-content-display {
+    width: 100%;
+    // min-height: 120px;
+    padding: 0.75rem;
     font-size: 0.875rem;
     line-height: 1.5;
-    color: #374151;
-    white-space: pre-wrap;
-    word-break: break-word;
+    font-family: inherit;
+    background: white;
+
+    .ProseMirror {
+      outline: none;
+      border: none;
+      min-height: auto;
+      padding: 0;
+      margin: 0;
+
+      p {
+        margin: 0;
+        line-height: 1.5;
+        
+        &:not(:last-child) {
+          margin-bottom: 0.5rem;
+        }
+      }
+    }
   }
 
-  .text-placeholder {
-    font-size: 0.875rem;
-    color: #9ca3af;
-    font-style: italic;
+  &.readonly {
+    .text-content-display {
+      background: transparent;
+    }
   }
-}
-
-/* Image placeholder for readonly mode */
-.image-placeholder {
-  min-height: 200px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: #f3f4f6;
-  color: #9ca3af;
-  font-size: 0.875rem;
-  font-style: italic;
 }
 
 /* Readonly mode adjustments */
@@ -245,6 +283,27 @@
   .image-actions {
     display: none;
   }
+
+  /* Ensure readonly images also preserve their natural height */
+  .image-display .uploaded-image {
+    width: 100%;
+    height: auto;
+    object-fit: contain; /* Preserve full image in readonly mode */
+    display: block;
+  }
+}
+
+/* Image placeholder for readonly mode */
+.image-placeholder {
+  min-height: 150px; /* Reduced from 200px to be more reasonable */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #f3f4f6;
+  color: #9ca3af;
+  font-size: 0.875rem;
+  font-style: italic;
+  border-radius: 0.25rem; /* Add slight border radius for better appearance */
 }
 
 /* Responsive Mobile Overrides */
@@ -262,6 +321,12 @@
       min-height: 100px;
       padding: 0.5rem;
       font-size: 0.8rem;
+    }
+
+    /* Mobile image adjustments */
+    .image-display .uploaded-image {
+      max-width: 100%;
+      height: auto; /* Maintain aspect ratio on mobile */
     }
   }
 }

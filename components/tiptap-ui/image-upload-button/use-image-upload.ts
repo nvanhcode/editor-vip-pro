@@ -93,6 +93,17 @@ export function insertImageTextCombo(editor: Editor | null, layout: "image-left-
           accept: "image/*",
           maxSize: 10 * 1024 * 1024, // 10MB default
         },
+        content: [
+          {
+            type: "paragraph",
+            content: [
+              {
+                type: "text",
+                text: "Enter your text here..."
+              }
+            ]
+          }
+        ]
       })
       .run()
     
