@@ -41,7 +41,7 @@
     "lodash.throttle": "^4.1.1",
     "lucide-react": "^1.16.0",
     "material-colors": "^1.2.6",
-    "next": "16.0.1",
+    "next": "16.0.10",
     "react": "19.2.0",
     "react-color": "^2.19.3",
     "react-dom": "19.2.0",
